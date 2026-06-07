@@ -1,6 +1,6 @@
 {
   "name": "NQ Position Size Calculator",
-  "short_name": "NQ Calc",
+  "short_name": "NQ",
   "description": "Calculadora de gestión de riesgo para futuros de NQ y MNQ",
   "start_url": "./index.html",
   "display": "standalone",

@@ -33,15 +33,21 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
+            /* Cambios clave aquí: */
             padding: 24px 16px;
+            min-height: 100vh;         /* Hace que el fondo ocupe el 100% de la altura del dispositivo */
+            box-sizing: border-box;
             display: flex;
-            justify-content: center;
+            flex-direction: column;    /* Alinea el contenido de arriba hacia abajo */
+            align-items: center;       /* Centra horizontalmente si la pantalla es muy ancha */
             -webkit-font-smoothing: antialiased;
         }
 
         .container {
             width: 100%;
-            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         header {
@@ -146,9 +152,9 @@
 
         /* Bloque de Resultados */
         .results-section {
-            margin-top: 36px;
-            border-top: 1px solid var(--border-color);
+            margin-top: auto;
             padding-top: 24px;
+            border-top: 1px solid var(--border-color);
         }
 
         .main-result {
