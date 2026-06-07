@@ -2,8 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NQ Calculator</title>
     <link rel="manifest" href="manifest.json">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="icon-192.png">
     
@@ -19,45 +23,52 @@
     <style>
         :root {
             --bg-color: #000000;
-            --card-bg: #0a0a0c;
-            --border-color: #1f1f23;
+            --card-bg: #0b0b0e;
+            --border-color: #27272a; /* Bordes ligeramente más claros para mejorar contraste estructural */
             --text-main: #ffffff;
-            --text-muted: #71717a;
-            --accent: #2563eb; /* Azul sutil para selección */
-            --accent-glow: rgba(37, 99, 235, 0.15);
-            --highlight: #34d399; /* Verde esmeralda para el resultado principal */
+            --text-muted: #a1a1aa; /* Texto secundario más claro (cumple WCAG AA de contraste) */
+            --accent: #38bdf8; /* Azul cielo de alta visibilidad (óptimo para daltonismo) */
+            --accent-glow: rgba(56, 189, 248, 0.2);
+            --highlight: #facc15; /* Amarillo intenso: excelente contraste sobre negro para cualquier visión */
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            /* Cambios clave aquí: */
-            padding: 24px 16px;
-            min-height: 100vh;         /* Hace que el fondo ocupe el 100% de la altura del dispositivo */
+            padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px) 16px;
             box-sizing: border-box;
             display: flex;
-            flex-direction: column;    /* Alinea el contenido de arriba hacia abajo */
-            align-items: center;       /* Centra horizontalmente si la pantalla es muy ancha */
+            flex-direction: column;
             -webkit-font-smoothing: antialiased;
+            user-select: none;
         }
 
         .container {
             width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            flex: 1;
+            height: 100%;
+            justify-content: space-between;
         }
 
         header {
-            margin-bottom: 32px;
+            margin-top: 10px;
+            margin-bottom: 24px;
             text-align: center;
         }
 
         h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 1.4rem;
+            font-weight: 700;
             letter-spacing: -0.025em;
             margin: 0;
             color: var(--text-main);
@@ -66,17 +77,24 @@
         p.subtitle {
             font-size: 0.85rem;
             color: var(--text-muted);
-            margin: 4px 0 0 0;
+            margin: 6px 0 0 0;
         }
 
-        /* Selector Minimalista */
+        .form-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        /* Selector de Activo */
         .selector {
             display: flex;
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 4px;
             background: var(--card-bg);
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .selector-btn {
@@ -84,17 +102,20 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 10px;
+            padding: 12px;
             font-size: 0.9rem;
-            font-weight: 500;
-            border-radius: 7px;
+            font-weight: 600;
+            border-radius: 9px;
             cursor: pointer;
             transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
+        /* El botón activo ahora resalta con el azul cielo de alta visibilidad */
         .selector-btn.active {
-            background: #18181b;
-            color: var(--text-main);
+            background: #1e293b; 
+            color: var(--accent);
+            border: 1px solid var(--accent);
             box-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
@@ -105,8 +126,8 @@
 
         .input-field label {
             display: block;
-            font-size: 0.8rem;
-            font-weight: 500;
+            font-size: 0.75rem;
+            font-weight: 600;
             color: var(--text-muted);
             margin-bottom: 8px;
             text-transform: uppercase;
@@ -119,23 +140,23 @@
 
         .input-wrapper span {
             position: absolute;
-            left: 14px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
         .input-wrapper.has-prefix input {
-            padding-left: 32px;
+            padding-left: 36px;
         }
 
         input {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             color: var(--text-main);
             font-size: 1.1rem;
             font-weight: 500;
@@ -143,6 +164,7 @@
             outline: none;
             transition: all 0.2s ease;
             -webkit-appearance: none;
+            user-select: text;
         }
 
         input:focus {
@@ -153,13 +175,14 @@
         /* Bloque de Resultados */
         .results-section {
             margin-top: auto;
-            padding-top: 24px;
+            padding-top: 20px;
+            padding-bottom: 10px;
             border-top: 1px solid var(--border-color);
         }
 
         .main-result {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .main-result .label {
@@ -170,24 +193,24 @@
         }
 
         .main-result .value {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: var(--highlight);
+            font-size: 3.8rem;
+            font-weight: 800;
+            color: var(--highlight); /* El número grande de contratos sugeridos ahora es Amarillo */
             line-height: 1;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px;
         }
 
         .data-box {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             padding: 14px;
-            border-radius: 10px;
+            border-radius: 12px;
         }
 
         .data-box .label {
@@ -206,34 +229,35 @@
 <body>
 
 <div class="container">
-    <header>
-        <h1>NQ POSITION SIZE</h1>
-        <p class="subtitle">Gestión de riesgo para Futuros</p>
-    </header>
-    
-    <!-- Selector de Activo -->
-    <div class="selector">
-        <button id="btn-micro" class="selector-btn active" onclick="setAsset('micro')">Micro (MNQ)</button>
-        <button id="btn-mini" class="selector-btn" onclick="setAsset('mini')">Mini (NQ)</button>
-    </div>
+    <div>
+        <header>
+            <h1>NQ POSITION SIZE</h1>
+            <p class="subtitle">Gestión de riesgo para Futuros</p>
+        </header>
+        
+        <div class="form-content">
+            <div class="selector">
+                <button id="btn-micro" class="selector-btn active" onclick="setAsset('micro')">Micro (MNQ)</button>
+                <button id="btn-mini" class="selector-btn" onclick="setAsset('mini')">Mini (NQ)</button>
+            </div>
 
-    <!-- Inputs -->
-    <div class="input-field">
-        <label for="stop-loss">Stop Loss (Puntos)</label>
-        <div class="input-wrapper">
-            <input type="number" id="stop-loss" step="0.25" placeholder="0.00" inputmode="decimal" oninput="calcular()">
+            <div class="input-field">
+                <label for="stop-loss">Stop Loss (Puntos)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="stop-loss" step="0.25" placeholder="0.00" inputmode="decimal" oninput="calcular()">
+                </div>
+            </div>
+
+            <div class="input-field">
+                <label for="max-risk">Riesgo Máximo</label>
+                <div class="input-wrapper has-prefix">
+                    <span>$</span>
+                    <input type="number" id="max-risk" placeholder="0" inputmode="numeric" oninput="calcular()">
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="input-field">
-        <label for="max-risk">Riesgo Máximo</label>
-        <div class="input-wrapper has-prefix">
-            <span>$</span>
-            <input type="number" id="max-risk" placeholder="0" inputmode="numeric" oninput="calcular()">
-        </div>
-    </div>
-
-    <!-- Resultados en Tiempo Real -->
     <div class="results-section">
         <div class="main-result">
             <div class="label">Contratos Sugeridos</div>
@@ -254,7 +278,6 @@
 </div>
 
 <script>
-    // Configuración NQ: Micro = $2/punto, Mini = $20/punto
     let multiplier = 2; 
 
     function setAsset(type) {
@@ -268,14 +291,13 @@
             document.getElementById('btn-mini').classList.add('active');
             multiplier = 20;
         }
-        calcular(); // Recalcula al cambiar de pestaña
+        calcular();
     }
 
     function calcular() {
         const stopLoss = parseFloat(document.getElementById('stop-loss').value);
         const maxRisk = parseFloat(document.getElementById('max-risk').value);
 
-        // Si los campos están vacíos o son inválidos, resetea a cero sin molestar con alertas
         if (isNaN(stopLoss) || isNaN(maxRisk) || stopLoss <= 0 || maxRisk <= 0) {
             document.getElementById('res-contratos').innerText = "0";
             document.getElementById('res-riesgo-real').innerText = "$0.00";
@@ -291,7 +313,6 @@
         const riesgoReal = contratos * costPerContract;
         const valorPuntoTotal = contratos * multiplier;
 
-        // Inyección de datos en tiempo real
         document.getElementById('res-contratos').innerText = contratos;
         document.getElementById('res-riesgo-real').innerText = `$${riesgoReal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('res-valor-punto').innerText = `$${valorPuntoTotal.toFixed(2)}`;
