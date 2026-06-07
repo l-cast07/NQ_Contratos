@@ -32,9 +32,10 @@
             --highlight: #facc15; 
         }
 
-        /* Bloqueo total del rebote elástico exterior del dispositivo */
+        /* Bloqueo estricto del redimensionamiento del sistema operativo */
         html, body {
-            height: 100%;
+            height: 100svh; /* Forza al navegador a medir únicamente la pantalla real física */
+            max-height: 100svh;
             overflow: hidden;
             background-color: var(--bg-color);
             margin: 0;
@@ -50,22 +51,22 @@
             justify-content: center;
         }
 
-        /* Contenedor principal que ocupa exactamente la pantalla disponible */
         .container {
             width: 100%;
             max-width: 450px;
-            height: 100%;
+            height: 100svh;
             box-sizing: border-box;
-            padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px) 16px;
+            padding: env(safe-area-inset-top, 20px) 16px calc(15px + env(safe-area-inset-bottom, 15px)) 16px;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         header {
             margin-top: 10px;
             margin-bottom: 24px;
             text-align: center;
-            flex-shrink: 0; /* Evita que el título se aplaste si la pantalla es pequeña */
+            flex-shrink: 0;
         }
 
         h1 {
@@ -82,18 +83,10 @@
             margin: 6px 0 0 0;
         }
 
-        /* ZONA DE ENTRADAS CON SCROLL INTERNO INDEPENDIENTE: 
-           Cuando el teclado se abre, solo esta zona se desliza internamente */
+        /* Contenedor central de entradas */
         .form-content {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 2px;
-            -webkit-overflow-scrolling: touch; /* Suavidad de scroll en iOS */
-        }
-
-        /* Oculta barra de scroll estéticamente en móviles */
-        .form-content::-webkit-scrollbar {
-            display: none;
+            width: 100%;
+            flex-shrink: 0;
         }
 
         /* Selector de Activo */
@@ -180,14 +173,15 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* SECCIÓN DE RESULTADOS COMPLETAMENTE FIJA ABAJO:
-           Nunca se mueve, no cambia su orden y no se deforma */
+        /* SECCIÓN DE RESULTADOS: Forzada al fondo absoluto de la pantalla de forma invariable */
         .results-section {
-            flex-shrink: 0;
-            padding-top: 20px;
-            padding-bottom: 10px;
+            position: absolute;
+            bottom: calc(15px + env(safe-area-inset-bottom, 15px));
+            left: 16px;
+            right: 16px;
             border-top: 1px solid var(--border-color);
-            background-color: var(--bg-color); /* Capa sólida para que el scroll no se traslape */
+            padding-top: 24px;
+            background-color: var(--bg-color);
         }
 
         .main-result {
@@ -239,12 +233,12 @@
 <body>
 
 <div class="container">
-    <header>
-        <h1>NQ POSITION SIZE</h1>
-        <p class="subtitle">Gestión de riesgo para Futuros</p>
-    </header>
-    
     <div class="form-content">
+        <header>
+            <h1>NQ POSITION SIZE</h1>
+            <p class="subtitle">Gestión de riesgo para Futuros</p>
+        </header>
+        
         <div class="selector">
             <button id="btn-micro" class="selector-btn active" onclick="setAsset('micro')">Micro (MNQ)</button>
             <button id="btn-mini" class="selector-btn" onclick="setAsset('mini')">Mini (NQ)</button>
