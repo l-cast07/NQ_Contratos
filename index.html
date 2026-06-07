@@ -173,12 +173,9 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* SECCIÓN DE RESULTADOS: Forzada al fondo absoluto de la pantalla de forma invariable */
+        /* SECCIÓN DE RESULTADOS: Ahora fluye de manera natural debajo del formulario */
         .results-section {
-            position: absolute;
-            bottom: calc(15px + env(safe-area-inset-bottom, 15px));
-            left: 16px;
-            right: 16px;
+            margin-top: 10px;
             border-top: 1px solid var(--border-color);
             padding-top: 24px;
             background-color: var(--bg-color);
