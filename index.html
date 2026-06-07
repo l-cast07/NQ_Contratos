@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NQ Calculator</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito', reg))
+                    .catch(err => console.error('Error al registrar el Service Worker', err));
+            });
+        }
+    </script>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #0a0a0c;
+            --border-color: #1f1f23;
+            --text-main: #ffffff;
+            --text-muted: #71717a;
+            --accent: #2563eb; /* Azul sutil para selección */
+            --accent-glow: rgba(37, 99, 235, 0.15);
+            --highlight: #34d399; /* Verde esmeralda para el resultado principal */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px 16px;
+            display: flex;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        p.subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        /* Selector Minimalista */
+        .selector {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 4px;
+            background: var(--card-bg);
+            margin-bottom: 28px;
+        }
+
+        .selector-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .selector-btn.active {
+            background: #18181b;
+            color: var(--text-main);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* Campos de Entrada */
+        .input-field {
+            margin-bottom: 20px;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper span {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .input-wrapper.has-prefix input {
+            padding-left: 32px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 500;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Bloque de Resultados */
+        .results-section {
+            margin-top: 36px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+        }
+
+        .main-result {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .main-result .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .main-result .value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--highlight);
+            line-height: 1;
+            margin-top: 8px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .data-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .data-box .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .data-box .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>NQ POSITION SIZE</h1>
+        <p class="subtitle">Gestión de riesgo para Futuros</p>
+    </header>
+    
+    <!-- Selector de Activo -->
+    <div class="selector">
+        <button id="btn-micro" class="selector-btn active" onclick="setAsset('micro')">Micro (MNQ)</button>
+        <button id="btn-mini" class="selector-btn" onclick="setAsset('mini')">Mini (NQ)</button>
+    </div>
+
+    <!-- Inputs -->
+    <div class="input-field">
+        <label for="stop-loss">Stop Loss (Puntos)</label>
+        <div class="input-wrapper">
+            <input type="number" id="stop-loss" step="0.25" placeholder="0.00" inputmode="decimal" oninput="calcular()">
+        </div>
+    </div>
+
+    <div class="input-field">
+        <label for="max-risk">Riesgo Máximo</label>
+        <div class="input-wrapper has-prefix">
+            <span>$</span>
+            <input type="number" id="max-risk" placeholder="0" inputmode="numeric" oninput="calcular()">
+        </div>
+    </div>
+
+    <!-- Resultados en Tiempo Real -->
+    <div class="results-section">
+        <div class="main-result">
+            <div class="label">Contratos Sugeridos</div>
+            <div class="value" id="res-contratos">0</div>
+        </div>
+        
+        <div class="data-grid">
+            <div class="data-box">
+                <div class="label">Riesgo Real</div>
+                <div class="value" id="res-riesgo-real">$0.00</div>
+            </div>
+            <div class="data-box">
+                <div class="label">Valor/Punto Total</div>
+                <div class="value" id="res-valor-punto">$0.00</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuración NQ: Micro = $2/punto, Mini = $20/punto
+    let multiplier = 2; 
+
+    function setAsset(type) {
+        document.getElementById('btn-micro').classList.remove('active');
+        document.getElementById('btn-mini').classList.remove('active');
+        
+        if (type === 'micro') {
+            document.getElementById('btn-micro').classList.add('active');
+            multiplier = 2;
+        } else {
+            document.getElementById('btn-mini').classList.add('active');
+            multiplier = 20;
+        }
+        calcular(); // Recalcula al cambiar de pestaña
+    }
+
+    function calcular() {
+        const stopLoss = parseFloat(document.getElementById('stop-loss').value);
+        const maxRisk = parseFloat(document.getElementById('max-risk').value);
+
+        // Si los campos están vacíos o son inválidos, resetea a cero sin molestar con alertas
+        if (isNaN(stopLoss) || isNaN(maxRisk) || stopLoss <= 0 || maxRisk <= 0) {
+            document.getElementById('res-contratos').innerText = "0";
+            document.getElementById('res-riesgo-real').innerText = "$0.00";
+            document.getElementById('res-valor-punto').innerText = "$0.00";
+            return;
+        }
+
+        const costPerContract = stopLoss * multiplier;
+        let contratos = Math.floor(maxRisk / costPerContract);
+        
+        if (contratos < 0) contratos = 0;
+
+        const riesgoReal = contratos * costPerContract;
+        const valorPuntoTotal = contratos * multiplier;
+
+        // Inyección de datos en tiempo real
+        document.getElementById('res-contratos').innerText = contratos;
+        document.getElementById('res-riesgo-real').innerText = `$${riesgoReal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('res-valor-punto').innerText = `$${valorPuntoTotal.toFixed(2)}`;
+    }
+</script>
+
+</body>
+</html>
