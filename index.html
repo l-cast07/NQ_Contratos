@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NQ Calculator</title>
     <link rel="manifest" href="manifest.json">
     
@@ -24,46 +24,48 @@
         :root {
             --bg-color: #000000;
             --card-bg: #0b0b0e;
-            --border-color: #27272a; /* Bordes ligeramente más claros para mejorar contraste estructural */
+            --border-color: #27272a; 
             --text-main: #ffffff;
-            --text-muted: #a1a1aa; /* Texto secundario más claro (cumple WCAG AA de contraste) */
-            --accent: #38bdf8; /* Azul cielo de alta visibilidad (óptimo para daltonismo) */
+            --text-muted: #a1a1aa; 
+            --accent: #38bdf8; 
             --accent-glow: rgba(56, 189, 248, 0.2);
-            --highlight: #facc15; /* Amarillo intenso: excelente contraste sobre negro para cualquier visión */
+            --highlight: #facc15; 
         }
 
+        /* Bloqueo total del rebote elástico exterior del dispositivo */
         html, body {
             height: 100%;
             overflow: hidden;
             background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text-main);
-            margin: 0;
-            padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px) 16px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
             -webkit-font-smoothing: antialiased;
             user-select: none;
+            display: flex;
+            justify-content: center;
         }
 
+        /* Contenedor principal que ocupa exactamente la pantalla disponible */
         .container {
             width: 100%;
             max-width: 450px;
-            margin: 0 auto;
+            height: 100%;
+            box-sizing: border-box;
+            padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px) 16px;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            justify-content: space-between;
         }
 
         header {
             margin-top: 10px;
             margin-bottom: 24px;
             text-align: center;
+            flex-shrink: 0; /* Evita que el título se aplaste si la pantalla es pequeña */
         }
 
         h1 {
@@ -80,11 +82,18 @@
             margin: 6px 0 0 0;
         }
 
+        /* ZONA DE ENTRADAS CON SCROLL INTERNO INDEPENDIENTE: 
+           Cuando el teclado se abre, solo esta zona se desliza internamente */
         .form-content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
+            overflow-y: auto;
+            padding-right: 2px;
+            -webkit-overflow-scrolling: touch; /* Suavidad de scroll en iOS */
+        }
+
+        /* Oculta barra de scroll estéticamente en móviles */
+        .form-content::-webkit-scrollbar {
+            display: none;
         }
 
         /* Selector de Activo */
@@ -111,7 +120,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* El botón activo ahora resalta con el azul cielo de alta visibilidad */
         .selector-btn.active {
             background: #1e293b; 
             color: var(--accent);
@@ -172,12 +180,14 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* Bloque de Resultados */
+        /* SECCIÓN DE RESULTADOS COMPLETAMENTE FIJA ABAJO:
+           Nunca se mueve, no cambia su orden y no se deforma */
         .results-section {
-            margin-top: auto;
+            flex-shrink: 0;
             padding-top: 20px;
             padding-bottom: 10px;
             border-top: 1px solid var(--border-color);
+            background-color: var(--bg-color); /* Capa sólida para que el scroll no se traslape */
         }
 
         .main-result {
@@ -195,7 +205,7 @@
         .main-result .value {
             font-size: 3.8rem;
             font-weight: 800;
-            color: var(--highlight); /* El número grande de contratos sugeridos ahora es Amarillo */
+            color: var(--highlight); 
             line-height: 1;
             margin-top: 6px;
         }
@@ -229,31 +239,29 @@
 <body>
 
 <div class="container">
-    <div>
-        <header>
-            <h1>NQ POSITION SIZE</h1>
-            <p class="subtitle">Gestión de riesgo para Futuros</p>
-        </header>
-        
-        <div class="form-content">
-            <div class="selector">
-                <button id="btn-micro" class="selector-btn active" onclick="setAsset('micro')">Micro (MNQ)</button>
-                <button id="btn-mini" class="selector-btn" onclick="setAsset('mini')">Mini (NQ)</button>
-            </div>
+    <header>
+        <h1>NQ POSITION SIZE</h1>
+        <p class="subtitle">Gestión de riesgo para Futuros</p>
+    </header>
+    
+    <div class="form-content">
+        <div class="selector">
+            <button id="btn-micro" class="selector-btn active" onclick="setAsset('micro')">Micro (MNQ)</button>
+            <button id="btn-mini" class="selector-btn" onclick="setAsset('mini')">Mini (NQ)</button>
+        </div>
 
-            <div class="input-field">
-                <label for="stop-loss">Stop Loss (Puntos)</label>
-                <div class="input-wrapper">
-                    <input type="number" id="stop-loss" step="0.25" placeholder="0.00" inputmode="decimal" oninput="calcular()">
-                </div>
+        <div class="input-field">
+            <label for="stop-loss">Stop Loss (Puntos)</label>
+            <div class="input-wrapper">
+                <input type="number" id="stop-loss" step="0.25" placeholder="0.00" inputmode="decimal" oninput="calcular()">
             </div>
+        </div>
 
-            <div class="input-field">
-                <label for="max-risk">Riesgo Máximo</label>
-                <div class="input-wrapper has-prefix">
-                    <span>$</span>
-                    <input type="number" id="max-risk" placeholder="0" inputmode="numeric" oninput="calcular()">
-                </div>
+        <div class="input-field">
+            <label for="max-risk">Riesgo Máximo</label>
+            <div class="input-wrapper has-prefix">
+                <span>$</span>
+                <input type="number" id="max-risk" placeholder="0" inputmode="numeric" oninput="calcular()">
             </div>
         </div>
     </div>
