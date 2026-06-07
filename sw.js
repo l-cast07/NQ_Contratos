@@ -2,7 +2,9 @@ const CACHE_NAME = 'nq-calc-v1';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Instalar el Service Worker y almacenar archivos en caché
